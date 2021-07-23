@@ -1,5 +1,5 @@
 [package]
-name = "RustEPL"
+name = "rust_epl"
 version = "0.1.0"
 authors = ["Pablo Ortiz <pablo.ortiz@duke.edu>"]
 edition = "2018"
