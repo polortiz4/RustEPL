@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Team {
     idx: u8,
 }
@@ -42,6 +43,6 @@ mod tests {
     fn test_teams() {
         let team = Team::new(5);
         assert_eq!(team.to_string(), "Burnley");
-        assert_eq!(Team::New(1).to_string(), "Arsenal");
+        assert_eq!(Team::new(1).to_string(), "Arsenal");
     }
 }
