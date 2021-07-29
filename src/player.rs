@@ -1,4 +1,4 @@
-use crate::Team;
+use crate::team::Team;
 use std::fmt;
 
 #[derive(Debug)]
@@ -30,10 +30,14 @@ pub struct Player {
     id: u16,
     team: Team,
     metric: f32,
+    total_points: u32,
 }
 
 impl Player {
-    pub fn set_metric(&mut self) {
+    pub fn metric(&self) -> f32 {
+        self.metric
+    }
+    pub fn update_metric(&mut self) {
         self.metric = self.form * self.health;
     }
     pub fn new(
@@ -44,6 +48,7 @@ impl Player {
         position: Position,
         id: u16,
         team: Team,
+        points: u32,
     ) -> Player {
         let mut player = Player {
             form: form,
@@ -54,8 +59,9 @@ impl Player {
             id: id,
             team: team,
             metric: 0.0,
+            total_points: points,
         };
-        player.set_metric();
+        player.update_metric();
         player
     }
 }
@@ -69,7 +75,7 @@ impl Eq for Player {}
 impl ToString for Player {
     fn to_string(&self) -> String {
         format!(
-            "{}, form: {:.2}, price: {:.2}, position: {}, team: {}, id: {}, health: {:.2}, metric: {:.2}",
+            "{}, form: {:.2}, price: {:.2}, position: {}, team: {}, id: {}, health: {:.2}, metric: {:.2}, points: {}",
             self.name,
             self.form,
             self.price,
@@ -77,7 +83,8 @@ impl ToString for Player {
             self.team.to_string(),
             self.id,
             self.health,
-            self.metric
+            self.metric,
+            self.total_points,
         )
     }
 }
@@ -96,6 +103,7 @@ mod tests {
             Position::MID,
             1,
             Team::new(6),
+            0,
         );
 
         assert_eq!(player.form, 7.2);
@@ -103,6 +111,7 @@ mod tests {
         assert_eq!(player.price, 1.0);
         assert_eq!(player.name, "Lampard");
         assert_eq!(player.id, 1);
+        assert_eq!(player.metric(), 5.7599998);
         assert_eq!(player.metric, 5.7599998);
 
         assert_eq!(
@@ -118,6 +127,7 @@ mod tests {
             Position::DEF,
             1,
             Team::new(6),
+            0,
         );
         assert_eq!(player, same_id_player);
     }

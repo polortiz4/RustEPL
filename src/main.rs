@@ -1,9 +1,11 @@
+mod api;
 mod player;
 mod team;
-use player::Player;
-use team::Team;
 
-fn main() {
-    println!("Hello, world!");
-    let a = Team::new(5);
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let list = api::get_full_player_list().unwrap();
+    for player in list {
+        println!("{}", player.to_string());
+    }
+    Ok(())
 }
