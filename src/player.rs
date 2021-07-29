@@ -38,7 +38,8 @@ impl Player {
         self.metric
     }
     pub fn update_metric(&mut self) {
-        self.metric = self.form * self.health;
+        self.metric = self.total_points as f32;
+        // self.metric = self.form * self.health;
     }
     pub fn new(
         form: f32,
@@ -75,7 +76,7 @@ impl Eq for Player {}
 impl ToString for Player {
     fn to_string(&self) -> String {
         format!(
-            "{}, form: {:.2}, price: {:.2}, position: {}, team: {}, id: {}, health: {:.2}, metric: {:.2}, points: {}",
+            "{}, form: {:.2}, price: {:.2}, position: {}, team: {}, id: {}, health: {:.2}, points: {}, metric: {:.2}",
             self.name,
             self.form,
             self.price,
@@ -103,7 +104,7 @@ mod tests {
             Position::MID,
             1,
             Team::new(6),
-            0,
+            5,
         );
 
         assert_eq!(player.form, 7.2);
@@ -111,12 +112,12 @@ mod tests {
         assert_eq!(player.price, 1.0);
         assert_eq!(player.name, "Lampard");
         assert_eq!(player.id, 1);
-        assert_eq!(player.metric(), 5.7599998);
-        assert_eq!(player.metric, 5.7599998);
+        assert_eq!(player.metric(), 5.0);
+        assert_eq!(player.metric, 5.0);
 
         assert_eq!(
             player.to_string(),
-            "Lampard, form: 7.20, price: 1.00, position: MID, team: Chelsea, id: 1, health: 0.80, metric: 5.76"
+            "Lampard, form: 7.20, price: 1.00, position: MID, team: Chelsea, id: 1, health: 0.80, points: 5, metric: 5"
         );
 
         let same_id_player = Player::new(
