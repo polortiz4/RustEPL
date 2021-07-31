@@ -1,7 +1,7 @@
 use crate::team::Team;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Position {
     GK,
     DEF,
@@ -20,15 +20,15 @@ impl fmt::Display for Position {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Player {
     form: f32,
     health: f32,
-    price: f32,
-    name: String,
-    position: Position,
+    pub price: f32,
+    pub name: String,
+    pub position: Position,
     id: u16,
-    team: Team,
+    pub team: Team,
     metric: f32,
     total_points: u32,
 }

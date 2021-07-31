@@ -2,6 +2,8 @@ use crate::player::{Player, Position};
 use crate::team::Team;
 use serde::Deserialize;
 
+const FANTASY_API_URL: &str = "https://fantasy.premierleague.com/api/bootstrap-static/";
+
 #[derive(Deserialize)]
 pub struct Response {
     pub elements: Vec<APIPlayer>,
@@ -43,8 +45,8 @@ impl APIPlayer {
     }
 }
 
-pub fn get_full_player_list() -> Result<Vec<Player>, Box<dyn std::error::Error>> {
-    let resp = reqwest::blocking::get("https://fantasy.premierleague.com/api/bootstrap-static/")?;
+pub fn get_full_sorted_player_list() -> Result<Vec<Player>, Box<dyn std::error::Error>> {
+    let resp = reqwest::blocking::get(FANTASY_API_URL)?;
     let resp_json: Response = serde_json::from_str(&resp.text()?)?;
 
     let mut result: Vec<Player> = resp_json.elements.iter().map(|p| p.to_player()).collect();
