@@ -41,7 +41,7 @@ pub struct Squad {
     midfielders: Vec<Player>,
     strikers: Vec<Player>,
 
-    players: Vec<Player>,
+    pub players: Vec<Player>,
 }
 
 impl fmt::Display for Squad {
@@ -104,7 +104,7 @@ impl Squad {
         self.max_cost() - self.total_cost()
     }
 
-    fn sort_players(&mut self) {
+    pub fn sort_players(&mut self) {
         self.goalkeepers.sort_by(|a, b| {
             b.metric()
                 .partial_cmp(&a.metric())

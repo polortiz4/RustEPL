@@ -35,7 +35,7 @@ impl APIPlayer {
 
         Player::new(
             self.form.parse::<f32>().unwrap(),
-            self.chance_of_playing_next_round.unwrap_or(0.0) / 100.0,
+            self.chance_of_playing_next_round.unwrap_or(100.0) / 100.0,
             self.now_cost / 10.0,
             self.web_name.clone(),
             position.unwrap(),
@@ -67,7 +67,7 @@ pub fn get_full_sorted_player_list() -> Result<Vec<Player>, Box<dyn std::error::
     let resp_json: PlayerResponse = serde_json::from_str(&resp.text()?)?;
 
     let mut result: Vec<Player> = resp_json.elements.iter().map(|p| p.to_player()).collect();
-    result.sort_by(|a, b| a.metric().partial_cmp(&b.metric()).unwrap());
+    result.sort_by(|b, a| a.metric().partial_cmp(&b.metric()).unwrap());
     Ok(result)
 }
 
