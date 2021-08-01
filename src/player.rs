@@ -1,7 +1,7 @@
 use crate::team::Team;
 use std::fmt;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Position {
     GK,
     DEF,
@@ -75,7 +75,7 @@ impl Eq for Player {}
 
 impl fmt::Debug for Player{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self.name)
+        write!(f, "{}", self.name)
     }
 }
 impl ToString for Player {

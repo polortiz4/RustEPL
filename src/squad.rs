@@ -136,7 +136,29 @@ impl Squad {
     }
 
     pub fn number_of_changes(&self, other: &Squad) -> usize {
-        self.players.iter().filter(|&p| !other.has_player(p)).count()
+        self.players
+            .iter()
+            .filter(|&p| !other.has_player(p))
+            .count()
+    }
+    pub fn changes_from(&self, other: &Squad) -> String{
+        let mut unique_from_self = Squad::new(1000.0);
+        let mut unique_from_other = Squad::new(1000.0);
+        for (my_player, other_player) in self.players.iter().zip(other.players.iter()){
+            if !other.has_player(my_player) {
+                unique_from_self.try_add_player(my_player).unwrap();
+            }
+            if !self.has_player(other_player) {
+                unique_from_other.try_add_player(other_player).unwrap();
+            }
+        }
+        
+        let mut result: String = String::new();
+        for (mine, other) in unique_from_self.organized_players().iter().zip(unique_from_other.organized_players().iter()){
+            assert!(mine.position == other.position);
+            result.push_str(&format!("Out: {:?} <-----------> In: {:?}\n", other, mine));
+        }
+        result
     }
     // Return a list of the starters from a given list
     pub fn position_starters(&self, position: Position, n_starters: usize) -> Vec<Player> {
@@ -156,6 +178,18 @@ impl Squad {
                 + self.defenders.capacity()
                 + self.midfielders.capacity()
                 + self.strikers.capacity()
+    }
+    pub fn total_metric(&self, captain_multiplier: f32) -> f32 {
+        self.players
+            .iter()
+            .map(|p| {
+                if *p == self.captain() {
+                    captain_multiplier * p.metric()
+                } else {
+                    p.metric()
+                }
+            })
+            .sum()
     }
 
     pub fn try_add_player(&mut self, player: &Player) -> Result<(), AddPlayerError> {
@@ -316,9 +350,22 @@ mod tests {
             Position::FWD,
             15,
             Team::new(6),
-            6,
+            7,
         )
     }
+    fn rooney_player() -> Player {
+        Player::new(
+            7.2,
+            0.8,
+            1.0,
+            String::from("Rooney"),
+            Position::FWD,
+            16,
+            Team::new(9),
+            5,
+        )
+    }
+
     fn six_p_squad() -> Squad {
         let mut squad = Squad::new(100.0);
         squad.try_add_player(&drogba_player()).unwrap();
@@ -330,20 +377,27 @@ mod tests {
         squad
     }
 
-
     #[test]
-    fn test_n_changes(){
+    fn test_total_metric(){
         let six_squad = six_p_squad();
-        let mut four_squad = Squad::new(100.0);
-        four_squad.try_add_player(&hazard_player()).unwrap();
-        four_squad.try_add_player(&lampard_player()).unwrap();
-        four_squad.try_add_player(&scholes_player()).unwrap();
-        four_squad.try_add_player(&maldini_player()).unwrap();
-        four_squad.try_add_player(&pablo_player()).unwrap();
-        four_squad.try_add_player(&gerrard_player()).unwrap();
-        assert_eq!(2, four_squad.number_of_changes(&six_squad));
-        assert_eq!(2, six_squad.number_of_changes(&four_squad));
+        assert_eq!(drogba_player(), six_squad.captain());
+        assert_eq!(38.0, six_squad.total_metric(2.0));
+    }
+    #[test]
+    fn test_n_changes() {
+        let six_squad = six_p_squad();
+        let mut alt_squad = Squad::new(100.0);
+        alt_squad.try_add_player(&rooney_player()).unwrap();
+        alt_squad.try_add_player(&lampard_player()).unwrap();
+        alt_squad.try_add_player(&scholes_player()).unwrap();
+        alt_squad.try_add_player(&maldini_player()).unwrap();
+        alt_squad.try_add_player(&buffon_player()).unwrap();
+        alt_squad.try_add_player(&pablo_player()).unwrap();
+        assert_eq!(2, alt_squad.number_of_changes(&six_squad));
+        assert_eq!(2, six_squad.number_of_changes(&alt_squad));
 
+        let expected = String::from("Out: Gerrard <-----------> In: Ortiz\nOut: Drogba <-----------> In: Rooney\n");
+        assert_eq!(expected, alt_squad.changes_from(&six_squad));
     }
     #[test]
     fn test_copy() {
