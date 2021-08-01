@@ -89,5 +89,6 @@ mod tests {
             "[Sánchez, Meslier, Dunk, Cresswell, Stones, Targett, Cancelo, Mané, Tielemans, Maddison, Son, Gündogan, Lacazette, Antonio, Maupay, Fernandes, Kane, Salah, Bamford, Vardy, Martínez, Rashford, Dallas, Watkins, Calvert-Lewin]",
             format!("{:?}", reduced_list)
         );
+        assert!(custom_squad.positions_full());
     }
 }

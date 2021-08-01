@@ -169,6 +169,24 @@ impl Squad {
         s_copy.goalkeepers
     }
 
+    pub fn changed_squad(&self, current_squad: &Squad) -> String {
+        let mut result: String = String::from("\nChanged Squad Lineup:");
+        for player in self.best_starter_lineup().players {
+            result.push_str(&format!(" {:?}", player));
+        }
+        result.push_str("\nChanged Squad Bench:");
+        for player in self.bench().players {
+            result.push_str(&format!(" {:?}", player));
+        }
+        result.push_str(&format!(
+            "\nCaptain: {:?}, metric: {}",
+            self.captain(),
+            self.captain().metric()
+        ));
+        result.push_str("\nChanges needed for Changes Squad:\n");
+        result.push_str(&format!("{}\n", self.changes_from(current_squad)));
+        result
+    }
     pub fn number_of_changes(&self, other: &Squad) -> usize {
         self.players
             .iter()
@@ -323,10 +341,14 @@ impl Squad {
             let mids = self.position_starters(Position::MID, lineup[2]);
             let fwds = self.position_starters(Position::FWD, lineup[3]);
 
-            gks.iter().for_each(|gk| starting_squad.force_add_player(&gk));
-            defs.iter().for_each(|def| starting_squad.force_add_player(&def));
-            mids.iter().for_each(|mid| starting_squad.force_add_player(&mid));
-            fwds.iter().for_each(|fwd| starting_squad.force_add_player(&fwd));
+            gks.iter()
+                .for_each(|gk| starting_squad.force_add_player(&gk));
+            defs.iter()
+                .for_each(|def| starting_squad.force_add_player(&def));
+            mids.iter()
+                .for_each(|mid| starting_squad.force_add_player(&mid));
+            fwds.iter()
+                .for_each(|fwd| starting_squad.force_add_player(&fwd));
 
             if best_lineup.is_none()
                 || starting_squad.total_metric(DEFAULT_CPT_MULTIPLIER) > best_metric
@@ -550,7 +572,18 @@ mod tests {
             17,
         )
     }
-
+    fn adebayor_player() -> Player {
+        Player::new(
+            17.0,
+            1.0,
+            1.0,
+            String::from("Adebayor"),
+            Position::FWD,
+            40,
+            Team::new(9),
+            17,
+        )
+    }
     fn full_squad() -> Squad {
         let mut squad = Squad::new(100.0);
         squad.try_add_player(&maldini_player()).unwrap();
@@ -619,22 +652,34 @@ mod tests {
         assert_eq!(69.0, six_squad.total_metric(DEFAULT_CPT_MULTIPLIER));
     }
     #[test]
-    fn test_n_changes() {
-        let six_squad = six_p_squad();
+    fn test_changes() {
+        let full_squad = full_squad();
         let mut alt_squad = Squad::new(100.0);
-        alt_squad.try_add_player(&rooney_player()).unwrap();
-        alt_squad.try_add_player(&lampard_player()).unwrap();
-        alt_squad.try_add_player(&scholes_player()).unwrap();
         alt_squad.try_add_player(&maldini_player()).unwrap();
+        alt_squad.try_add_player(&karius_player()).unwrap();
+        alt_squad.try_add_player(&suarez_player()).unwrap();
+        alt_squad.try_add_player(&cahill_player()).unwrap();
+        alt_squad.try_add_player(&adebayor_player()).unwrap();
         alt_squad.try_add_player(&buffon_player()).unwrap();
+        alt_squad.try_add_player(&terry_player()).unwrap();
         alt_squad.try_add_player(&pablo_player()).unwrap();
-        assert_eq!(2, alt_squad.number_of_changes(&six_squad));
-        assert_eq!(2, six_squad.number_of_changes(&alt_squad));
+        alt_squad.try_add_player(&fabregas_player()).unwrap();
+        alt_squad.try_add_player(&scholes_player()).unwrap();
+        alt_squad.try_add_player(&bale_player()).unwrap();
+        alt_squad.try_add_player(&lampard_player()).unwrap();
+        alt_squad.try_add_player(&vidic_player()).unwrap();
+        alt_squad.try_add_player(&johnson_player()).unwrap();
+        alt_squad.try_add_player(&rooney_player()).unwrap();
+        assert_eq!(2, alt_squad.number_of_changes(&full_squad));
+        assert_eq!(2, full_squad.number_of_changes(&alt_squad));
 
         let expected = String::from(
-            "Out: Gerrard <-----------> In: Ortiz\nOut: Drogba <-----------> In: Rooney\n",
+            "Out: Gerrard <-----------> In: Ortiz\nOut: Drogba <-----------> In: Adebayor\n",
         );
-        assert_eq!(expected, alt_squad.changes_from(&six_squad));
+        assert_eq!(expected, alt_squad.changes_from(&full_squad));
+        let expected = String::from("\nChanged Squad Lineup: Karius Cahill Johnson Vidic Bale Fabregas Lampard Scholes Suarez Adebayor Rooney\nChanged Squad Bench: Maldini Buffon Terry Ortiz\nCaptain: Adebayor, metric: 17\nChanges needed for Changes Squad:\nOut: Gerrard <-----------> In: Ortiz\nOut: Drogba <-----------> In: Adebayor\n\n");
+        print!("{}", expected);
+        assert_eq!(expected, alt_squad.changed_squad(&full_squad));
     }
     #[test]
     fn test_copy() {
