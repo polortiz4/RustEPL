@@ -26,11 +26,11 @@ pub struct Player {
     pub team: Team,
     pub position: Position,
     pub price: f32,
-    form: f32,
-    health: f32,
-    id: u16,
+    pub id: u16,
+    pub form: f32,
+    pub health: f32,
+    pub total_points: u32,
     metric: f32,
-    total_points: u32,
 }
 
 impl Player {

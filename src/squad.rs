@@ -24,7 +24,7 @@ const POSSIBLE_LINEUPS: [&'static [usize; 4]; 8] = [
 ];
 
 #[derive(Debug, PartialEq)]
-enum AddPlayerError {
+pub enum AddPlayerError {
     TooExpensiveError(String),
     PositionFull(String),
     TeamsSpotFull(String),
@@ -152,7 +152,8 @@ impl Squad {
     }
 
     fn has_player(&self, player: &Player) -> bool {
-        self.players.iter().filter(|&p| p == player).count() > 0
+        self.players.contains(player)
+        // self.players.iter().filter(|&p| p == player).count() > 0
     }
 
     pub fn sort_and_organized_players(&mut self) -> Vec<Player> {
