@@ -33,6 +33,20 @@ pub struct Squad {
     players: Vec<Player>,
 }
 
+impl PartialEq for Squad {
+    fn eq(&self, other: &Squad) -> bool {
+        self.organized_players() == other.organized_players()
+    }
+}
+impl Clone for Squad {
+    fn clone(&self) -> Squad {
+        let mut copy = Squad::new(self.max_cost());
+        for player in &self.players {
+            copy.try_add_player(&player).unwrap();
+        }
+        copy
+    }
+}
 impl Squad {
     pub fn new(max_cost: f32) -> Squad {
         Squad::new_with_size(max_cost, N_GK, N_DEF, N_MID, N_FWD)
@@ -63,6 +77,10 @@ impl Squad {
     }
     pub fn total_cost(&self) -> f32 {
         self.players.iter().map(|p| p.price).sum()
+    }
+
+    pub fn leftover_money(&self) -> f32 {
+        self.max_cost() - self.total_cost()
     }
 
     fn sort_players(&mut self) {
@@ -104,22 +122,25 @@ impl Squad {
         self.players.iter().filter(|&p| p == player).count() > 0
     }
 
-    pub fn organized_players(&mut self) -> Vec<Player> {
+    pub fn sort_and_organized_players(&mut self) -> Vec<Player> {
         self.sort_players();
-        let mut gk_clone = self.goalkeepers.clone();
-        let mut def_clone = self.defenders.clone();
-        let mut mid_clone = self.midfielders.clone();
-        let mut fwd_clone = self.strikers.clone();
-        mid_clone.append(&mut fwd_clone);
-        def_clone.append(&mut mid_clone);
-        gk_clone.append(&mut def_clone);
-        gk_clone
+        self.organized_players()
+    }
+    pub fn organized_players(&self) -> Vec<Player> {
+        let mut s_copy = self.clone();
+        s_copy.sort_players();
+        s_copy.midfielders.append(&mut s_copy.strikers);
+        s_copy.defenders.append(&mut s_copy.midfielders);
+        s_copy.goalkeepers.append(&mut s_copy.defenders);
+        s_copy.goalkeepers
     }
 
-
+    pub fn number_of_changes(&self, other: &Squad) -> usize {
+        self.players.iter().filter(|&p| !other.has_player(p)).count()
+    }
     // Return a list of the starters from a given list
     pub fn position_starters(&self, position: Position, n_starters: usize) -> Vec<Player> {
-        let player_list = match position{
+        let player_list = match position {
             Position::GK => &self.goalkeepers,
             Position::DEF => &self.defenders,
             Position::MID => &self.midfielders,
@@ -197,7 +218,6 @@ impl Squad {
             Position::FWD => self.strikers.push(player.clone()),
         }
     }
-    
 }
 
 #[cfg(test)]
@@ -299,9 +319,7 @@ mod tests {
             6,
         )
     }
-
-    #[test]
-    fn test_organized_players(){
+    fn six_p_squad() -> Squad {
         let mut squad = Squad::new(100.0);
         squad.try_add_player(&drogba_player()).unwrap();
         squad.try_add_player(&lampard_player()).unwrap();
@@ -309,18 +327,57 @@ mod tests {
         squad.try_add_player(&maldini_player()).unwrap();
         squad.try_add_player(&buffon_player()).unwrap();
         squad.try_add_player(&gerrard_player()).unwrap();
-        let expected = vec![buffon_player(), maldini_player(), scholes_player(), lampard_player(), gerrard_player(), drogba_player()];
+        squad
+    }
+
+
+    #[test]
+    fn test_n_changes(){
+        let six_squad = six_p_squad();
+        let mut four_squad = Squad::new(100.0);
+        four_squad.try_add_player(&hazard_player()).unwrap();
+        four_squad.try_add_player(&lampard_player()).unwrap();
+        four_squad.try_add_player(&scholes_player()).unwrap();
+        four_squad.try_add_player(&maldini_player()).unwrap();
+        four_squad.try_add_player(&pablo_player()).unwrap();
+        four_squad.try_add_player(&gerrard_player()).unwrap();
+        assert_eq!(2, four_squad.number_of_changes(&six_squad));
+        assert_eq!(2, six_squad.number_of_changes(&four_squad));
+
+    }
+    #[test]
+    fn test_copy() {
+        let squad = six_p_squad();
+        let s_copy = squad.clone();
+        assert_eq!(squad, s_copy);
+    }
+    #[test]
+    fn test_organized_players() {
+        let mut squad = Squad::new(100.0);
+        squad.try_add_player(&drogba_player()).unwrap();
+        squad.try_add_player(&lampard_player()).unwrap();
+        squad.try_add_player(&scholes_player()).unwrap();
+        squad.try_add_player(&maldini_player()).unwrap();
+        squad.try_add_player(&buffon_player()).unwrap();
+        squad.try_add_player(&gerrard_player()).unwrap();
+        let expected = vec![
+            buffon_player(),
+            maldini_player(),
+            scholes_player(),
+            lampard_player(),
+            gerrard_player(),
+            drogba_player(),
+        ];
         assert_eq!(expected, squad.organized_players());
     }
     #[test]
-    fn test_mid_starters(){
+    fn test_mid_starters() {
         let mut squad = Squad::new(100.0);
         squad.try_add_player(&lampard_player()).unwrap();
         squad.try_add_player(&gerrard_player()).unwrap();
         squad.try_add_player(&hazard_player()).unwrap();
         squad.try_add_player(&scholes_player()).unwrap();
         let expected = vec![scholes_player(), lampard_player(), hazard_player()];
-        println!("{:?}", expected);
         assert_eq!(expected, squad.position_starters(Position::MID, 3));
     }
     #[test]
