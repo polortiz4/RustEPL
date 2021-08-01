@@ -1,5 +1,8 @@
 use crate::player::{Player, Position};
 use crate::team::Team;
+extern crate ordered_float;
+use ordered_float::OrderedFloat;
+
 use std::fmt;
 
 const N_GK: usize = 2;
@@ -62,9 +65,78 @@ impl Squad {
         self.players.iter().map(|p| p.price).sum()
     }
 
+    fn sort_players(&mut self) {
+        self.goalkeepers
+            .sort_by(|a, b| b.metric().partial_cmp(&a.metric()).unwrap());
+        self.defenders
+            .sort_by(|a, b| b.metric().partial_cmp(&a.metric()).unwrap());
+        self.midfielders
+            .sort_by(|a, b| b.metric().partial_cmp(&a.metric()).unwrap());
+        self.strikers
+            .sort_by(|a, b| b.metric().partial_cmp(&a.metric()).unwrap());
+    }
+
+    pub fn remove_player(&mut self, player: &Player) {
+        if self.has_player(&player) {
+            match player.position {
+                Position::GK => self.goalkeepers.retain(|p| p != player),
+                Position::DEF => self.defenders.retain(|p| p != player),
+                Position::MID => self.midfielders.retain(|p| p != player),
+                Position::FWD => self.strikers.retain(|p| p != player),
+            }
+            self.players.retain(|p| p != player);
+        }
+    }
+
+    pub fn captain(&self) -> Player {
+        self.players
+            .iter()
+            .max_by_key(|p| OrderedFloat(p.metric()))
+            .unwrap()
+            .clone()
+    }
+
     fn players_from_team(&self, team: Team) -> usize {
         self.players.iter().filter(|&p| p.team == team).count()
     }
+
+    fn has_player(&self, player: &Player) -> bool {
+        self.players.iter().filter(|&p| p == player).count() > 0
+    }
+
+    pub fn organized_players(&mut self) -> Vec<Player> {
+        self.sort_players();
+        let mut gk_clone = self.goalkeepers.clone();
+        let mut def_clone = self.defenders.clone();
+        let mut mid_clone = self.midfielders.clone();
+        let mut fwd_clone = self.strikers.clone();
+        mid_clone.append(&mut fwd_clone);
+        def_clone.append(&mut mid_clone);
+        gk_clone.append(&mut def_clone);
+        gk_clone
+    }
+
+
+    // Return a list of the starters from a given list
+    pub fn position_starters(&self, position: Position, n_starters: usize) -> Vec<Player> {
+        let player_list = match position{
+            Position::GK => &self.goalkeepers,
+            Position::DEF => &self.defenders,
+            Position::MID => &self.midfielders,
+            Position::FWD => &self.strikers,
+        };
+        let mut ans = player_list.clone();
+        ans.sort_by(|a, b| b.metric().partial_cmp(&a.metric()).unwrap());
+        ans[..n_starters].to_vec()
+    }
+    pub fn positions_full(&self) -> bool {
+        self.players.len()
+            == self.goalkeepers.capacity()
+                + self.defenders.capacity()
+                + self.midfielders.capacity()
+                + self.strikers.capacity()
+    }
+
     pub fn try_add_player(&mut self, player: &Player) -> Result<(), AddPlayerError> {
         // Check team capacity
         if self.players_from_team(player.team) >= MAX_PLAYERS_PER_TEAM {
@@ -76,7 +148,7 @@ impl Squad {
         }
 
         // Check for duplication
-        if self.players.iter().filter(|&p| p == player).count() > 0 {
+        if self.has_player(&player) {
             return Err(AddPlayerError::DuplicatePlayer(format!(
                 "Player {} is already in the squad",
                 player.name
@@ -125,12 +197,48 @@ impl Squad {
             Position::FWD => self.strikers.push(player.clone()),
         }
     }
+    
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
+    fn hazard_player() -> Player {
+        Player::new(
+            7.2,
+            0.8,
+            1.0,
+            String::from("Hazard"),
+            Position::MID,
+            10,
+            Team::new(6),
+            5,
+        )
+    }
+    fn gerrard_player() -> Player {
+        Player::new(
+            7.2,
+            0.8,
+            1.0,
+            String::from("Gerrard"),
+            Position::MID,
+            11,
+            Team::new(9),
+            1,
+        )
+    }
+    fn scholes_player() -> Player {
+        Player::new(
+            7.2,
+            0.8,
+            1.0,
+            String::from("Scholes"),
+            Position::MID,
+            12,
+            Team::new(10),
+            6,
+        )
+    }
     fn lampard_player() -> Player {
         Player::new(
             7.2,
@@ -143,7 +251,87 @@ mod tests {
             5,
         )
     }
+    fn pablo_player() -> Player {
+        Player::new(
+            7.1,
+            0.8,
+            1.0,
+            String::from("Ortiz"),
+            Position::MID,
+            3,
+            Team::new(6),
+            4,
+        )
+    }
+    fn buffon_player() -> Player {
+        Player::new(
+            7.2,
+            0.8,
+            1.0,
+            String::from("Buffon"),
+            Position::GK,
+            13,
+            Team::new(12),
+            6,
+        )
+    }
+    fn maldini_player() -> Player {
+        Player::new(
+            7.2,
+            0.8,
+            1.0,
+            String::from("Maldini"),
+            Position::DEF,
+            14,
+            Team::new(13),
+            6,
+        )
+    }
+    fn drogba_player() -> Player {
+        Player::new(
+            7.2,
+            0.8,
+            1.0,
+            String::from("Drogba"),
+            Position::FWD,
+            15,
+            Team::new(6),
+            6,
+        )
+    }
 
+    #[test]
+    fn test_organized_players(){
+        let mut squad = Squad::new(100.0);
+        squad.try_add_player(&drogba_player()).unwrap();
+        squad.try_add_player(&lampard_player()).unwrap();
+        squad.try_add_player(&scholes_player()).unwrap();
+        squad.try_add_player(&maldini_player()).unwrap();
+        squad.try_add_player(&buffon_player()).unwrap();
+        squad.try_add_player(&gerrard_player()).unwrap();
+        let expected = vec![buffon_player(), maldini_player(), scholes_player(), lampard_player(), gerrard_player(), drogba_player()];
+        assert_eq!(expected, squad.organized_players());
+    }
+    #[test]
+    fn test_mid_starters(){
+        let mut squad = Squad::new(100.0);
+        squad.try_add_player(&lampard_player()).unwrap();
+        squad.try_add_player(&gerrard_player()).unwrap();
+        squad.try_add_player(&hazard_player()).unwrap();
+        squad.try_add_player(&scholes_player()).unwrap();
+        let expected = vec![scholes_player(), lampard_player(), hazard_player()];
+        println!("{:?}", expected);
+        assert_eq!(expected, squad.position_starters(Position::MID, 3));
+    }
+    #[test]
+    fn test_captain() {
+        let mut squad = Squad::new(100.0);
+        let player = lampard_player();
+        squad.force_add_player(&player);
+        let player = pablo_player();
+        squad.force_add_player(&player);
+        assert_eq!(squad.captain(), lampard_player());
+    }
     #[test]
     fn test_max_cost() {
         let mut squad = Squad::new(100.0);
@@ -152,6 +340,28 @@ mod tests {
         assert_eq!(95.0 + EPSILON, squad.max_cost());
     }
 
+    #[test]
+    fn test_remove_player() {
+        let mut squad = Squad::new(100.0);
+        let player = lampard_player();
+        squad.try_add_player(&player).unwrap();
+        let player = pablo_player();
+        assert_eq!(squad.players_from_team(Team::new(6)), 1);
+        squad.try_add_player(&player).unwrap();
+        assert_eq!(squad.players_from_team(Team::new(6)), 2);
+        let player = Player::new(
+            7.2,
+            0.8,
+            1.0,
+            String::from("Lampard"),
+            Position::MID,
+            1,
+            Team::new(6),
+            5,
+        );
+        squad.remove_player(&player);
+        assert_eq!(squad.players_from_team(Team::new(6)), 1);
+    }
     #[test]
     fn test_team_full() {
         let mut squad = Squad::new(100.0);
@@ -192,7 +402,6 @@ mod tests {
         );
         squad.force_add_player(&player);
         squad.force_add_player(&player);
-        
         let player = Player::new(
             7.2,
             0.8,
@@ -203,7 +412,6 @@ mod tests {
             Team::new(8),
             5,
         );
-        
         assert!(matches!(
             squad.try_add_player(&player),
             Err(AddPlayerError::PositionFull { .. })
@@ -215,16 +423,7 @@ mod tests {
         let player = lampard_player();
         squad.force_add_player(&player);
 
-        let player = Player::new(
-            7.2,
-            0.8,
-            1.0,
-            String::from("Ortiz"),
-            Position::MID,
-            3,
-            Team::new(6),
-            5,
-        );
+        let player = pablo_player();
         assert!(matches!(
             squad.try_add_player(&player),
             Err(AddPlayerError::TooExpensiveError { .. })

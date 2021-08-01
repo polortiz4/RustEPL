@@ -1,4 +1,6 @@
-#[derive(Debug, PartialEq, Clone, Copy)]
+use std::fmt;
+
+#[derive(PartialEq, Clone, Copy)]
 pub struct Team {
     idx: u8,
 }
@@ -8,8 +10,9 @@ impl Team {
         Team { idx: idx }
     }
 }
-impl ToString for Team {
-    fn to_string(&self) -> String {
+
+impl Team {
+    fn to_string_helper(&self) -> String {
         match self.idx {
             1 => String::from("Arsenal"),
             2 => String::from("Aston Villa"),
@@ -33,6 +36,17 @@ impl ToString for Team {
             20 => String::from("Wolves"),
             _ => String::from("Unknown"),
         }
+    }
+}
+
+impl fmt::Display for Team {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self.to_string_helper())
+    }
+}
+impl fmt::Debug for Team {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self.to_string_helper())
     }
 }
 #[cfg(test)]

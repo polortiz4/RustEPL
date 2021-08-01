@@ -20,7 +20,7 @@ impl fmt::Display for Position {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Player {
     form: f32,
     health: f32,
@@ -73,6 +73,11 @@ impl PartialEq for Player {
 }
 impl Eq for Player {}
 
+impl fmt::Debug for Player{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self.name)
+    }
+}
 impl ToString for Player {
     fn to_string(&self) -> String {
         format!(
@@ -81,7 +86,7 @@ impl ToString for Player {
             self.form,
             self.price,
             self.position,
-            self.team.to_string(),
+            self.team,
             self.id,
             self.health,
             self.metric,
