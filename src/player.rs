@@ -22,13 +22,13 @@ impl fmt::Display for Position {
 
 #[derive(Clone)]
 pub struct Player {
+    pub name: String,
+    pub team: Team,
+    pub position: Position,
+    pub price: f32,
     form: f32,
     health: f32,
-    pub price: f32,
-    pub name: String,
-    pub position: Position,
     id: u16,
-    pub team: Team,
     metric: f32,
     total_points: u32,
 }
