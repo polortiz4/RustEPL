@@ -1,7 +1,8 @@
 # RustEPL
 Tool for determining optimal Fantasy EPL teams given user-defined metrics
+
 Pablo Ortiz <pablo..ortiz@duke.edu>
-Finds Optimal EPL Fantasy Team
+
 
 USAGE:
     rust_epl.exe [FLAGS] [OPTIONS]
