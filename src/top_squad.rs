@@ -12,6 +12,7 @@ pub struct TopSquad {
     current_squad: Squad,
     config: Config,
     top_adjusted_metric: f32,
+    n_tries_for_top: usize,
 }
 impl TopSquad {
     pub fn new(current_squad: Squad, config: Config) -> Self {
@@ -22,9 +23,16 @@ impl TopSquad {
             current_squad: current_squad,
             config: config,
             top_adjusted_metric: 0.0,
+            n_tries_for_top: 0,
         };
         squad.top_adjusted_metric = squad.adjusted_metric(&squad.current_squad);
         squad
+    }
+    pub fn n_squads_checked(&self) -> usize {
+        self.n_squads
+    }
+    pub fn top_squad_idx(&self) -> usize {
+        self.n_tries_for_top
     }
     fn adjusted_metric(&self, squad: &Squad) -> f32 {
         let n_changes = squad.number_of_changes(&self.current_squad);
@@ -37,6 +45,10 @@ impl TopSquad {
     fn set_top_squad(&mut self, squad: &Squad) {
         self.top_squad = squad.clone();
         self.top_adjusted_metric = self.adjusted_metric(&self.top_squad);
+        self.n_tries_for_top = self.n_squads;
+    }
+    pub fn changes_for_top(&self) -> String {
+        self.top_squad.changed_squad(&self.current_squad)
     }
 }
 impl Listener for TopSquad {
@@ -61,7 +73,7 @@ impl Listener for TopSquad {
         }
         if (self.n_squads - 1) % 1000 == 999 {
             if self.key_poller.poll() {
-                println!("{}", self.top_squad.changed_squad(&self.current_squad));
+                println!("{}", self.changes_for_top());
             }
         }
     }

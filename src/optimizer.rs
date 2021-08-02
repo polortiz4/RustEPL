@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+use std::rc::Rc;
 use crate::Player;
 use crate::Squad;
 use std::f32;
@@ -11,7 +13,7 @@ pub struct SquadNotFull(String);
 pub struct Optimizer {
     transfer_cost: f32,
     squad_max_len: usize,
-    observers: Vec<Box<dyn Listener>>,
+    observers: Vec<Rc<RefCell<dyn Listener>>>,
     cheapest_cost: Option<f32>,
     current_squad: Option<Squad>,
     n_free_transfers: usize,
@@ -43,13 +45,13 @@ impl Optimizer {
             stack_i: 1,
         }
     }
-    pub fn register(&mut self, logger: Box<dyn Listener>)
+    pub fn register(&mut self, logger: Rc<RefCell<dyn Listener>>)
     {
         self.observers.push(logger);
     }
     pub fn trigger_callbacks(&mut self, squad: &Squad) {
-        for logger in &mut self.observers {
-            logger.notify_new_squad(&squad);
+        for logger in &self.observers {
+            logger.borrow_mut().notify_new_squad(&squad);
         }
     }
 

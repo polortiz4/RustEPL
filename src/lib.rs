@@ -1,20 +1,23 @@
 use crate::logger::Logger;
+use crate::optimizer::Listener;
 use crate::optimizer::Optimizer;
 use crate::player::Player;
 use crate::squad::Squad;
-use clap::{load_yaml, App};
-use std::error::Error;
 use crate::top_squad::TopSquad;
+use clap::{load_yaml, App};
+use std::cell::RefCell;
+use std::error::Error;
+use std::rc::Rc;
 
 const CAPTAIN_MULTIPLIER: f32 = 2.0;
 
 mod api;
 mod key_poller;
+mod logger;
 mod optimizer;
 mod player;
 mod squad;
 mod team;
-mod logger;
 mod top_squad;
 
 #[derive(Debug)]
@@ -65,7 +68,7 @@ fn get_top_n_players(full_list: Vec<Player>, n_players: usize, squad: &Squad) ->
 
     for player in full_list {
         if result.capacity() == result.len() {
-            break
+            break;
         }
         if !result.contains(&player) {
             result.push(player.clone());
@@ -107,8 +110,11 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         )
     };
 
-    let logger = Logger::new(&reduced_list);
-    let top_squad_holder = TopSquad::new(current_squad.clone(), config.clone());
+    let logger = Rc::new(RefCell::new(Logger::new(&reduced_list)));
+    let top_squad_holder = Rc::new(RefCell::new(TopSquad::new(
+        current_squad.clone(),
+        config.clone(),
+    )));
     let mut new_squad = Squad::new(current_squad.max_cost());
     let mut optimizer = Optimizer::new(
         Some(current_squad.clone()),
@@ -118,10 +124,12 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         None,
         None,
     );
-    optimizer.register(Box::new(logger));
-    optimizer.register(Box::new(top_squad_holder));
+    optimizer.register(Rc::clone(&logger) as Rc<RefCell<dyn Listener>>);
+    optimizer.register(Rc::clone(&top_squad_holder) as Rc<RefCell<dyn Listener>>);
     let _ = optimizer.fill_squad(&mut new_squad, &reduced_list);
-    println!("{}", new_squad.changed_squad(&current_squad));
+    println!("Top Squad:\n{}", top_squad_holder.borrow().changes_for_top());
+    println!("Number of Squads checked: {}", top_squad_holder.borrow().n_squads_checked());
+    println!("Top Squad found after {} valid squads", top_squad_holder.borrow().top_squad_idx());
     Ok(())
 }
 
