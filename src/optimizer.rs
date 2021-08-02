@@ -1,15 +1,17 @@
-use crate::Logger;
 use crate::Player;
 use crate::Squad;
 use std::f32;
 
+pub trait Listener {
+    fn notify_new_squad(&mut self, squad: &Squad);
+}
 #[derive(Debug, PartialEq)]
 pub struct SquadNotFull(String);
 
 pub struct Optimizer {
     transfer_cost: f32,
     squad_max_len: usize,
-    observers: Vec<Logger>,
+    observers: Vec<Box<dyn Listener>>,
     cheapest_cost: Option<f32>,
     current_squad: Option<Squad>,
     n_free_transfers: usize,
@@ -41,13 +43,13 @@ impl Optimizer {
             stack_i: 1,
         }
     }
-    pub fn register(&mut self, logger: Logger)
+    pub fn register(&mut self, logger: Box<dyn Listener>)
     {
         self.observers.push(logger);
     }
-    pub fn trigger_callbacks(&mut self, squad: &Squad, players: &[Player]) {
+    pub fn trigger_callbacks(&mut self, squad: &Squad) {
         for logger in &mut self.observers {
-            logger.notify_new_squad(&squad, players);
+            logger.notify_new_squad(&squad);
         }
     }
 
@@ -144,7 +146,7 @@ impl Optimizer {
 
             if squad.positions_full() {
                 // Valid squad found
-                self.trigger_callbacks(squad, &available_players);
+                self.trigger_callbacks(squad);
             } else if let Some(next_player) = available_players.get(i + 1) {
                 self.max_metric = Some(next_player.metric());
                 self.stack_i += 1;

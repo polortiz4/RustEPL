@@ -4,6 +4,7 @@ use crate::player::Player;
 use crate::squad::Squad;
 use clap::{load_yaml, App};
 use std::error::Error;
+use crate::top_squad::TopSquad;
 
 mod api;
 mod key_poller;
@@ -12,6 +13,7 @@ mod player;
 mod squad;
 mod team;
 mod logger;
+mod top_squad;
 
 #[derive(Debug)]
 struct PlayerNotFound(String);
@@ -103,7 +105,8 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         )
     };
 
-    let logger = Logger::new(current_squad.clone(), &reduced_list);
+    let logger = Logger::new(&reduced_list);
+    let top_squad_holder = TopSquad::new(current_squad.clone());
     let mut new_squad = Squad::new(current_squad.max_cost());
     let mut optimizer = Optimizer::new(
         Some(current_squad.clone()),
@@ -113,7 +116,8 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         None,
         None,
     );
-    optimizer.register(logger);
+    optimizer.register(Box::new(logger));
+    optimizer.register(Box::new(top_squad_holder));
     let _ = optimizer.fill_squad(&mut new_squad, &reduced_list);
     println!("{}", new_squad.changed_squad(&current_squad));
     Ok(())
