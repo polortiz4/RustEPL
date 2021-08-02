@@ -31,8 +31,6 @@ pub enum AddPlayerError {
     DuplicatePlayer(String),
 }
 
-struct SquadNotFull;
-
 #[derive(Debug)]
 pub struct Squad {
     max_cost: f32,
@@ -151,7 +149,7 @@ impl Squad {
         self.players.iter().filter(|&p| p.team == team).count()
     }
 
-    fn has_player(&self, player: &Player) -> bool {
+    pub fn has_player(&self, player: &Player) -> bool {
         self.players.contains(player)
         // self.players.iter().filter(|&p| p == player).count() > 0
     }

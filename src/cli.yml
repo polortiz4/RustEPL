@@ -1,0 +1,51 @@
+name: RustEPL
+version: "1.0"
+author: Pablo Ortiz <pablo..ortiz@duke.edu>
+about: Finds Optimal EPL Fantasy Team
+args:
+    - gameweek:
+        short: g
+        long: gameweek
+        help: last week's gameweek number
+        takes_value: true
+    - password:
+        short: p
+        long: password
+        help: True if fantasy password is to be provided manually, false if it's to be decoded from hardcoded encrypted password
+    - user_id:
+        short: u
+        long: user-id
+        help: user-id from fantasy server to evaluate
+        takes_value: true
+        default_value: "3521386"
+    - verbose:
+        short: v
+        help: Sets verbosity
+    - top_n_players:
+        short: n
+        long: top-n-players
+        help: Number of players to search in, that is the top n players in terms of metric
+        takes_value: true
+        default_value: "20"
+    - free_transfers:
+        long: free-transfers
+        help: Number of free transfers
+        takes_value: true
+        default_value: "1"
+    - overwrite:
+        long: overwrite-pulled-team
+        help: True if you want to build your current squad manually instead of pulling, team would have to be hardcoded
+        takes_value: false
+    - min_metric:
+        long: min-player-metric
+        help: Minimum acceptable player metric
+        takes_value: true
+    - transfer_cost:
+        long: transfer-cost
+        help: Cost per transfer
+        takes_value: true
+        default_value: "5"
+    - bench_point_value:
+        long: bench-point-value
+        help: Cost of a bench point
+        default_value: "5"
