@@ -1,22 +1,5 @@
-use device_query::{DeviceQuery, DeviceState, Keycode};
-use std::collections::VecDeque;
-
-struct Queue<T> {
-    dequeue: VecDeque<T>,
-}
-impl<T> Queue<T> {
-    pub fn enqueue(&mut self, item: T) {
-        self.dequeue.push_back(item);
-    }
-    pub fn dequeue(&mut self) -> Option<T> {
-        self.dequeue.pop_front()
-    }
-    pub fn new() -> Self {
-        Queue {
-            dequeue: VecDeque::new(),
-        }
-    }
-}
+pub use device_query::Keycode;
+use device_query::{DeviceQuery, DeviceState};
 
 pub struct KeyPoller {
     pub key: Keycode,
@@ -52,7 +35,7 @@ impl KeyPoller {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[ignore]
     #[test]
     fn main_test() {

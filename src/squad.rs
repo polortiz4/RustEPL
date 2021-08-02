@@ -168,7 +168,7 @@ impl Squad {
     }
 
     pub fn changed_squad(&self, current_squad: &Squad) -> String {
-        let mut result: String = String::from("\nChanged Squad Lineup:");
+        let mut result: String = String::from("\n\nChanged Squad Lineup:");
         for player in self.best_starter_lineup().players {
             result.push_str(&format!(" {:?}", player));
         }
@@ -204,12 +204,12 @@ impl Squad {
         }
         let mut result: String = String::new();
         for (mine, other) in unique_from_self
-            .organized_players()
+            .sort_and_organized_players()
             .iter()
-            .zip(unique_from_other.organized_players().iter())
+            .zip(unique_from_other.sort_and_organized_players().iter())
         {
             assert!(mine.position == other.position);
-            result.push_str(&format!("Out: {:?} <-----------> In: {:?}\n", other, mine));
+            result.push_str(&format!("Out: {:?}, {} <-----------> In: {:?}, {}\n", other, other.metric(), mine, mine.metric()));
         }
         result
     }

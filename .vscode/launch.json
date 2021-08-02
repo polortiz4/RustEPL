@@ -19,7 +19,7 @@
                     "kind": "bin"
                 }
             },
-            "args": [],
+            "args": ["-g", "10", "--overwrite-pulled-team", "-n", "20"],
             "cwd": "${workspaceFolder}"
         },
         {

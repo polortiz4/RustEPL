@@ -1,3 +1,4 @@
+use crate::Logger;
 use crate::Player;
 use crate::Squad;
 use std::f32;
@@ -8,7 +9,7 @@ pub struct SquadNotFull(String);
 pub struct Optimizer {
     transfer_cost: f32,
     squad_max_len: usize,
-    observers: Vec<Box<dyn Fn(&Squad)>>,
+    observers: Vec<Logger>,
     cheapest_cost: Option<f32>,
     current_squad: Option<Squad>,
     n_free_transfers: usize,
@@ -40,15 +41,13 @@ impl Optimizer {
             stack_i: 1,
         }
     }
-    pub fn register<F>(&mut self, callback: F)
-    where
-        F: 'static + Fn(&Squad),
+    pub fn register(&mut self, logger: Logger)
     {
-        self.observers.push(Box::new(callback));
+        self.observers.push(logger);
     }
-    pub fn trigger_callbacks(&self, squad: &Squad) {
-        for callback in &self.observers {
-            callback(&squad);
+    pub fn trigger_callbacks(&mut self, squad: &Squad, players: &[Player]) {
+        for logger in &mut self.observers {
+            logger.notify_new_squad(&squad, players);
         }
     }
 
@@ -145,13 +144,11 @@ impl Optimizer {
 
             if squad.positions_full() {
                 // Valid squad found
-                self.trigger_callbacks(squad);
+                self.trigger_callbacks(squad, &available_players);
             } else if let Some(next_player) = available_players.get(i + 1) {
                 self.max_metric = Some(next_player.metric());
                 self.stack_i += 1;
-                if let Ok(_) = self.fill_squad(squad, &available_players[i + 1..]) {
-                }
-                self.stack_i -= 1;
+                let _ = self.fill_squad(squad, &available_players[i + 1..]);
             }
             squad.remove_player(&p);
         }

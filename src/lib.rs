@@ -1,9 +1,8 @@
-use crate::key_poller::KeyPoller;
+use crate::logger::Logger;
 use crate::optimizer::Optimizer;
-use crate::player::{Player, Position};
+use crate::player::Player;
 use crate::squad::Squad;
-use clap::{load_yaml, App, Arg};
-use device_query::{DeviceQuery, DeviceState, Keycode};
+use clap::{load_yaml, App};
 use std::error::Error;
 
 mod api;
@@ -12,6 +11,7 @@ mod optimizer;
 mod player;
 mod squad;
 mod team;
+mod logger;
 
 #[derive(Debug)]
 struct PlayerNotFound(String);
@@ -61,12 +61,17 @@ fn get_top_n_players(full_list: Vec<Player>, n_players: usize, squad: &Squad) ->
 
     for player in full_list {
         if result.capacity() == result.len() {
-            return result;
+            break
         }
         if !result.contains(&player) {
             result.push(player.clone());
         }
     }
+    result.sort_by(|a, b| {
+        b.metric()
+            .partial_cmp(&a.metric())
+            .expect("Error sorting players")
+    });
     result
 }
 
@@ -85,26 +90,32 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         custom_squad(&list)
     } else {
         panic!("Team pull not implemented yet. Pass the --overwrite-pulled-team for now");
-        // Squad::new(100.0)
     };
-    if let Some(_) = config.min_player_metric {
+    let reduced_list = if let Some(_) = config.min_player_metric {
         panic!("Min_acceptable player metric not implemented yet");
-    }
-    let reduced_list = get_top_n_players(
-        list,
-        config.top_n_player.expect("expected a top_n_players value"),
-        &current_squad,
-    );
+    } else {
+        get_top_n_players(
+            list,
+            config
+                .top_n_player
+                .expect("expected either a top_n_players value, or a min_acceptable_metric"),
+            &current_squad,
+        )
+    };
+
+    let logger = Logger::new(current_squad.clone(), &reduced_list);
     let mut new_squad = Squad::new(current_squad.max_cost());
     let mut optimizer = Optimizer::new(
-        Some(current_squad),
+        Some(current_squad.clone()),
         config.transfer_cost,
         None,
         Some(config.free_transfers),
         None,
         None,
     );
-    optimizer.fill_squad(&mut new_squad, &reduced_list);
+    optimizer.register(logger);
+    let _ = optimizer.fill_squad(&mut new_squad, &reduced_list);
+    println!("{}", new_squad.changed_squad(&current_squad));
     Ok(())
 }
 
@@ -176,7 +187,6 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::team::Team;
 
     #[test]
     fn test_list_filter() {
