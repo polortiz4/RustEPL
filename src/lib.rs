@@ -40,22 +40,22 @@ fn add_by_last_name(
 }
 
 fn custom_squad(full_list: &Vec<Player>) -> Squad {
-    let money_in_bank = 11.3;
+    let money_in_bank = 1.0;
     let mut current_squad = Squad::new(1000.0);
     add_by_last_name(&mut current_squad, "Sánchez".to_string(), &full_list).unwrap();
-    add_by_last_name(&mut current_squad, "Meslier".to_string(), &full_list).unwrap();
+    add_by_last_name(&mut current_squad, "Martínez".to_string(), &full_list).unwrap();
     add_by_last_name(&mut current_squad, "Dunk".to_string(), &full_list).unwrap();
     add_by_last_name(&mut current_squad, "Cresswell".to_string(), &full_list).unwrap();
-    add_by_last_name(&mut current_squad, "Stones".to_string(), &full_list).unwrap();
+    add_by_last_name(&mut current_squad, "Robertson".to_string(), &full_list).unwrap();
+    add_by_last_name(&mut current_squad, "Alexander-Arnold".to_string(), &full_list).unwrap();
     add_by_last_name(&mut current_squad, "Targett".to_string(), &full_list).unwrap();
-    add_by_last_name(&mut current_squad, "Cancelo".to_string(), &full_list).unwrap();
-    add_by_last_name(&mut current_squad, "Mané".to_string(), &full_list).unwrap();
-    add_by_last_name(&mut current_squad, "Tielemans".to_string(), &full_list).unwrap();
-    add_by_last_name(&mut current_squad, "Maddison".to_string(), &full_list).unwrap();
-    add_by_last_name(&mut current_squad, "Son".to_string(), &full_list).unwrap();
+    add_by_last_name(&mut current_squad, "Salah".to_string(), &full_list).unwrap();
+    add_by_last_name(&mut current_squad, "Ward-Prowse".to_string(), &full_list).unwrap();
+    add_by_last_name(&mut current_squad, "Dallas".to_string(), &full_list).unwrap();
+    add_by_last_name(&mut current_squad, "Harrison".to_string(), &full_list).unwrap();
     add_by_last_name(&mut current_squad, "Gündogan".to_string(), &full_list).unwrap();
-    add_by_last_name(&mut current_squad, "Lacazette".to_string(), &full_list).unwrap();
-    add_by_last_name(&mut current_squad, "Antonio".to_string(), &full_list).unwrap();
+    add_by_last_name(&mut current_squad, "Benteke".to_string(), &full_list).unwrap();
+    add_by_last_name(&mut current_squad, "Bamford".to_string(), &full_list).unwrap();
     add_by_last_name(&mut current_squad, "Maupay".to_string(), &full_list).unwrap();
     current_squad.sort_players();
     current_squad.set_max_cost(money_in_bank + current_squad.total_cost());
