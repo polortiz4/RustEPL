@@ -20,7 +20,7 @@ pub struct Optimizer {
 impl Optimizer {
     pub fn new(
         current_squad: Option<Squad>,
-        transfer_cost: Option<f32>,
+        transfer_cost: f32,
         squad_max_len: Option<usize>,
         n_free_transfers: Option<usize>,
         min_metric: Option<f32>,
@@ -29,7 +29,7 @@ impl Optimizer {
         let squad_max_len = squad_max_len.unwrap_or(15);
         let n_free_transfers = n_free_transfers.unwrap_or(squad_max_len);
         Optimizer {
-            transfer_cost: transfer_cost.unwrap_or(4.0),
+            transfer_cost: transfer_cost,
             squad_max_len: squad_max_len,
             observers: Vec::new(),
             cheapest_cost: None,

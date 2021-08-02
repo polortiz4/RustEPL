@@ -55,12 +55,7 @@ fn custom_squad(full_list: &Vec<Player>) -> Squad {
     current_squad
 }
 
-fn get_top_n_players(
-    full_list: Vec<Player>,
-    n_players: usize,
-    squad: &Squad,
-    min_acceptable_metric: f32,
-) -> Vec<Player> {
+fn get_top_n_players(full_list: Vec<Player>, n_players: usize, squad: &Squad) -> Vec<Player> {
     let mut result: Vec<Player> = Vec::with_capacity(n_players + squad.players.len());
     squad.players.iter().for_each(|p| result.push(p.clone()));
 
@@ -68,7 +63,7 @@ fn get_top_n_players(
         if result.capacity() == result.len() {
             return result;
         }
-        if player.metric() > min_acceptable_metric && !result.contains(&player) {
+        if !result.contains(&player) {
             result.push(player.clone());
         }
     }
@@ -84,28 +79,47 @@ fn get_top_n_players(
 // }
 // }
 
-pub fn run() -> Result<(), Box<dyn Error>> {
+pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let list = api::get_full_sorted_player_list().unwrap();
-    let current_squad = custom_squad(&list);
-    let reduced_list = get_top_n_players(list, 10, &current_squad, 0.0);
+    let current_squad = if config.overwrite_pulled_team {
+        custom_squad(&list)
+    } else {
+        panic!("Team pull not implemented yet. Pass the --overwrite-pulled-team for now");
+        // Squad::new(100.0)
+    };
+    if let Some(_) = config.min_player_metric {
+        panic!("Min_acceptable player metric not implemented yet");
+    }
+    let reduced_list = get_top_n_players(
+        list,
+        config.top_n_player.expect("expected a top_n_players value"),
+        &current_squad,
+    );
     let mut new_squad = Squad::new(current_squad.max_cost());
-    let mut optimizer = Optimizer::new(Some(current_squad), None, None, None, None, None);
+    let mut optimizer = Optimizer::new(
+        Some(current_squad),
+        config.transfer_cost,
+        None,
+        Some(config.free_transfers),
+        None,
+        None,
+    );
     optimizer.fill_squad(&mut new_squad, &reduced_list);
     Ok(())
 }
 
 #[derive(Debug)]
 pub struct Config {
-    pub gameweek: Option<u8>,
-    pub password: bool,
-    pub user_id: u32,
-    pub verbose: bool,
+    pub gameweek: Option<u8>, // Not used yet
+    pub password: bool,       // Not used yet
+    pub user_id: u32,         // Not used yet
+    pub verbose: bool,        // Not used yet
     pub top_n_player: Option<usize>,
     pub free_transfers: usize,
     pub overwrite_pulled_team: bool,
     pub min_player_metric: Option<f32>,
     pub transfer_cost: f32,
-    pub bench_point_value: f32,
+    pub bench_point_value: f32, // Not used yet
 }
 impl Config {
     pub fn parse_cli() -> Config {
@@ -168,7 +182,7 @@ mod tests {
     fn test_list_filter() {
         let full_list = api::get_full_sorted_player_list().unwrap();
         let custom_squad = custom_squad(&full_list);
-        let reduced_list = get_top_n_players(full_list, 10, &custom_squad, 2.0);
+        let reduced_list = get_top_n_players(full_list, 10, &custom_squad);
         assert_eq!(
             "[Sánchez, Meslier, Dunk, Cresswell, Stones, Targett, Cancelo, Mané, Tielemans, Maddison, Son, Gündogan, Lacazette, Antonio, Maupay, Fernandes, Kane, Salah, Bamford, Vardy, Martínez, Rashford, Dallas, Watkins, Calvert-Lewin]",
             format!("{:?}", reduced_list)
