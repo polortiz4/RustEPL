@@ -20,7 +20,7 @@ impl Logger {
 impl Listener for Logger {
     fn notify_new_squad(&mut self, squad: &Squad) {
         self.n_squads += 1;
-        if (self.n_squads - 1) % 1000 == 999 {
+        if (self.n_squads - 1) % 500 == 499 {
             let mut line = String::from(format!(
                 "Valid squads found: {}, Progress (over {}): ",
                 self.n_squads,

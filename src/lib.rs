@@ -6,6 +6,8 @@ use clap::{load_yaml, App};
 use std::error::Error;
 use crate::top_squad::TopSquad;
 
+const CAPTAIN_MULTIPLIER: f32 = 2.0;
+
 mod api;
 mod key_poller;
 mod optimizer;
@@ -106,7 +108,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     };
 
     let logger = Logger::new(&reduced_list);
-    let top_squad_holder = TopSquad::new(current_squad.clone());
+    let top_squad_holder = TopSquad::new(current_squad.clone(), config.clone());
     let mut new_squad = Squad::new(current_squad.max_cost());
     let mut optimizer = Optimizer::new(
         Some(current_squad.clone()),
@@ -123,7 +125,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Config {
     pub gameweek: Option<u8>, // Not used yet
     pub password: bool,       // Not used yet

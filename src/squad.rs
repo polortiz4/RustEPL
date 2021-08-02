@@ -1,3 +1,4 @@
+use crate::CAPTAIN_MULTIPLIER;
 use crate::player::{Player, Position};
 use crate::team::Team;
 extern crate ordered_float;
@@ -11,7 +12,6 @@ const N_MID: usize = 5;
 const N_FWD: usize = 3;
 const EPSILON: f32 = 1e-4;
 const MAX_PLAYERS_PER_TEAM: usize = 3;
-const DEFAULT_CPT_MULTIPLIER: f32 = 2.0;
 const POSSIBLE_LINEUPS: [&'static [usize; 4]; 8] = [
     &[1, 3, 4, 3],
     &[1, 4, 3, 3],
@@ -47,7 +47,7 @@ impl fmt::Display for Squad {
         write!(
             f,
             "Squad with Metric: {:.2}, cost: {:.2}",
-            self.total_metric(DEFAULT_CPT_MULTIPLIER),
+            self.total_metric(CAPTAIN_MULTIPLIER),
             self.total_cost()
         )
     }
@@ -349,9 +349,9 @@ impl Squad {
                 .for_each(|fwd| starting_squad.force_add_player(&fwd));
 
             if best_lineup.is_none()
-                || starting_squad.total_metric(DEFAULT_CPT_MULTIPLIER) > best_metric
+                || starting_squad.total_metric(CAPTAIN_MULTIPLIER) > best_metric
             {
-                best_metric = starting_squad.total_metric(DEFAULT_CPT_MULTIPLIER);
+                best_metric = starting_squad.total_metric(CAPTAIN_MULTIPLIER);
                 best_lineup = Some(starting_squad);
             }
         }
@@ -647,7 +647,7 @@ mod tests {
     fn test_total_metric() {
         let six_squad = six_p_squad();
         assert_eq!(drogba_player(), six_squad.captain());
-        assert_eq!(69.0, six_squad.total_metric(DEFAULT_CPT_MULTIPLIER));
+        assert_eq!(69.0, six_squad.total_metric(CAPTAIN_MULTIPLIER));
     }
     #[test]
     fn test_changes() {
@@ -847,7 +847,7 @@ mod tests {
         squad.force_add_player(&player);
         assert_eq!(squad.total_cost(), 1.0);
         squad.force_add_player(&player);
-        assert_eq!(squad.total_cost(), DEFAULT_CPT_MULTIPLIER);
+        assert_eq!(squad.total_cost(), CAPTAIN_MULTIPLIER);
     }
     #[test]
     fn test_players_from_team() {

@@ -44,7 +44,7 @@ args:
         long: transfer-cost
         help: Cost per transfer
         takes_value: true
-        default_value: "5"
+        default_value: "4"
     - bench_point_value:
         long: bench-point-value
         help: Cost of a bench point
