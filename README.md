@@ -7,7 +7,9 @@ USAGE:
     rust_epl.exe [FLAGS] [OPTIONS]
 
 FLAGS:
+
     -h, --help                     Prints help information
+    
         --overwrite-pulled-team    True if you want to build your current squad manually instead of pulling, team would
                                    have to be hardcoded
     -p, --password                 True if fantasy password is to be provided manually, false if it's to be decoded from
@@ -15,7 +17,9 @@ FLAGS:
     -V, --version                  Prints version information
     -v                             Sets verbosity
 
+
 OPTIONS:
+
         --bench-point-value <bench_point_value>    Cost of a bench point [default: 5]
         --free-transfers <free_transfers>          Number of free transfers [default: 1]
     -g, --gameweek <gameweek>                      last week's gameweek number
