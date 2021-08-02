@@ -40,7 +40,7 @@ fn add_by_last_name(
 }
 
 fn custom_squad(full_list: &Vec<Player>) -> Squad {
-    let money_in_bank = 1.0;
+    let money_in_bank = 0.0;
     let mut current_squad = Squad::new(1000.0);
     add_by_last_name(&mut current_squad, "Martínez".to_string(), &full_list).unwrap();
     add_by_last_name(&mut current_squad, "Sánchez".to_string(), &full_list).unwrap();
