@@ -71,7 +71,7 @@ impl Listener for TopSquad {
                 println!("Found a squad was as good but with better value/bench! Squad #: {}, New metric: {:.2}\n", self.n_squads, self.top_adjusted_metric);
             }
         }
-        if (self.n_squads - 1) % 1000 == 999 {
+        if self.n_squads % 1000 == 0 {
             if self.key_poller.poll() {
                 println!("{}", self.changes_for_top());
             }
