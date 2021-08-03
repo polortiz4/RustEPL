@@ -1,7 +1,7 @@
 # RustEPL
 Tool for determining optimal Fantasy EPL teams given user-defined metrics
 
-Pablo Ortiz <pablo..ortiz@duke.edu>
+Pablo Ortiz <pablo.ortiz@duke.edu>
 
 
 USAGE:
