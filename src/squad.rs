@@ -1,6 +1,6 @@
-use crate::CAPTAIN_MULTIPLIER;
 use crate::player::{Player, Position};
 use crate::team::Team;
+use crate::CAPTAIN_MULTIPLIER;
 extern crate ordered_float;
 use ordered_float::OrderedFloat;
 
@@ -209,7 +209,13 @@ impl Squad {
             .zip(unique_from_other.sort_and_organized_players().iter())
         {
             assert!(mine.position == other.position);
-            result.push_str(&format!("    Out: {:?}, {} <-----------> In: {:?}, {}\n", other, other.metric(), mine, mine.metric()));
+            result.push_str(&format!(
+                "    Out: {:?}, {} <-----------> In: {:?}, {}\n",
+                other,
+                other.metric(),
+                mine,
+                mine.metric()
+            ));
         }
         result
     }
@@ -672,10 +678,10 @@ mod tests {
         assert_eq!(2, full_squad.number_of_changes(&alt_squad));
 
         let expected = String::from(
-            "Out: Gerrard <-----------> In: Ortiz\nOut: Drogba <-----------> In: Adebayor\n",
+            "    Out: Gerrard, 10 <-----------> In: Ortiz, 1\n    Out: Drogba, 15 <-----------> In: Adebayor, 17\n",
         );
         assert_eq!(expected, alt_squad.changes_from(&full_squad));
-        let expected = String::from("\nChanged Squad Lineup: Karius Cahill Johnson Vidic Bale Fabregas Lampard Scholes Suarez Adebayor Rooney\nChanged Squad Bench: Maldini Buffon Terry Ortiz\nCaptain: Adebayor, metric: 17\nChanges needed for Changes Squad:\nOut: Gerrard <-----------> In: Ortiz\nOut: Drogba <-----------> In: Adebayor\n\n");
+        let expected = String::from("\n\nChanged Squad:\n  Lineup:   Karius Cahill Johnson Vidic Bale Fabregas Lampard Scholes Suarez Adebayor Rooney\n  Bench:    Maldini Buffon Terry Ortiz\n  Captain:  Adebayor, metric: 17\n\n  Changes needed:\n    Out: Gerrard, 10 <-----------> In: Ortiz, 1\n    Out: Drogba, 15 <-----------> In: Adebayor, 17\n\n");
         print!("{}", expected);
         assert_eq!(expected, alt_squad.changed_squad(&full_squad));
     }

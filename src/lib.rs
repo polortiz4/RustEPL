@@ -9,6 +9,8 @@ use std::cell::RefCell;
 use std::error::Error;
 use std::rc::Rc;
 
+use std::io;
+
 const CAPTAIN_MULTIPLIER: f32 = 2.0;
 
 mod api;
@@ -91,12 +93,24 @@ fn get_top_n_players(full_list: Vec<Player>, n_players: usize, squad: &Squad) ->
 // }
 // }
 
+fn read_gameweek() -> u8 {
+    println!("What was the last gameweek?");
+    let mut input_text = String::new();
+    io::stdin()
+        .read_line(&mut input_text)
+        .expect("failed to read from stdin");
+
+    let trimmed = input_text.trim();
+    trimmed.parse::<u8>().unwrap()
+}
+
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let list = api::get_full_sorted_player_list().unwrap();
     let current_squad = if config.overwrite_pulled_team {
         custom_squad(&list)
     } else {
-        panic!("Team pull not implemented yet. Pass the --overwrite-pulled-team for now");
+        let gameweek = config.gameweek.unwrap_or(read_gameweek());
+        api::get_my_squad(config.user_id, gameweek, &list)?
     };
     let reduced_list = if let Some(_) = config.min_player_metric {
         panic!("Min_acceptable player metric not implemented yet");
@@ -127,9 +141,18 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     optimizer.register(Rc::clone(&logger) as Rc<RefCell<dyn Listener>>);
     optimizer.register(Rc::clone(&top_squad_holder) as Rc<RefCell<dyn Listener>>);
     let _ = optimizer.fill_squad(&mut new_squad, &reduced_list);
-    println!("Top Squad:\n{}", top_squad_holder.borrow().changes_for_top());
-    println!("Number of Squads checked: {}", top_squad_holder.borrow().n_squads_checked());
-    println!("Top Squad found after {} valid squads", top_squad_holder.borrow().top_squad_idx());
+    println!(
+        "Top Squad:\n{}",
+        top_squad_holder.borrow().changes_for_top()
+    );
+    println!(
+        "Number of Squads checked: {}",
+        top_squad_holder.borrow().n_squads_checked()
+    );
+    println!(
+        "Top Squad found after {} valid squads",
+        top_squad_holder.borrow().top_squad_idx()
+    );
     Ok(())
 }
 
@@ -169,12 +192,7 @@ impl Config {
         };
         let gameweek = match m.value_of("gameweek") {
             Some(gweek) => Some(gweek.parse::<u8>().unwrap()),
-            None => {
-                if !m.is_present("overwrite") {
-                    panic!("Please provide a gameweek, or overwrite team");
-                }
-                None
-            }
+            None => None
         };
         Config {
             gameweek: gameweek,
@@ -196,21 +214,5 @@ impl Config {
                 .parse::<f32>()
                 .unwrap(),
         }
-    }
-}
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_list_filter() {
-        let full_list = api::get_full_sorted_player_list().unwrap();
-        let custom_squad = custom_squad(&full_list);
-        let reduced_list = get_top_n_players(full_list, 10, &custom_squad);
-        assert_eq!(
-            "[Sánchez, Meslier, Dunk, Cresswell, Stones, Targett, Cancelo, Mané, Tielemans, Maddison, Son, Gündogan, Lacazette, Antonio, Maupay, Fernandes, Kane, Salah, Bamford, Vardy, Martínez, Rashford, Dallas, Watkins, Calvert-Lewin]",
-            format!("{:?}", reduced_list)
-        );
-        assert!(custom_squad.positions_full());
     }
 }

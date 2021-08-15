@@ -30,12 +30,12 @@
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=rust_epl",
+                    "--lib=rust_epl",
                     "--package=rust_epl"
                 ],
                 "filter": {
                     "name": "rust_epl",
-                    "kind": "bin"
+                    "kind": "lib"
                 }
             },
             "args": [],

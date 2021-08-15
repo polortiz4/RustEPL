@@ -17,7 +17,7 @@ args:
         long: user-id
         help: user-id from fantasy server to evaluate
         takes_value: true
-        default_value: "3521386"
+        default_value: "2367749"
     - verbose:
         short: v
         help: Sets verbosity

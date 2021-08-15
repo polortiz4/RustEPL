@@ -19,7 +19,7 @@ pub struct APIPlayer {
     now_cost: f32,
     team: u8,
     id: u16,
-    total_points: u32,
+    total_points: i32,
 }
 
 impl APIPlayer {
@@ -72,9 +72,9 @@ pub fn get_full_sorted_player_list() -> Result<Vec<Player>, Box<dyn std::error::
 }
 
 pub fn get_my_squad(
-    user_id: usize,
-    current_gameweek: usize,
-    full_player_list: Vec<Player>,
+    user_id: u32,
+    current_gameweek: u8,
+    full_player_list: &Vec<Player>,
 ) -> Result<Squad, Box<dyn std::error::Error>> {
     let resp = reqwest::blocking::get(format!(
         "https://fantasy.premierleague.com/api/entry/{}/event/{}/picks/",
@@ -94,4 +94,18 @@ pub fn get_my_squad(
     }
     current_squad.set_max_cost(resp_json.entry_history.bank / 10.0 + current_squad.total_cost());
     Ok(current_squad)
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_my_squad(){
+        let list = get_full_sorted_player_list().unwrap();
+        let squad = get_my_squad(2367749, 1, &list).unwrap();
+        let copy = squad.clone();
+        print!("{}", squad.changed_squad(&copy));
+    }
 }

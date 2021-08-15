@@ -29,7 +29,7 @@ pub struct Player {
     pub id: u16,
     pub form: f32,
     pub health: f32,
-    pub total_points: u32,
+    pub total_points: i32,
     metric: f32,
 }
 
@@ -38,8 +38,8 @@ impl Player {
         self.metric
     }
     pub fn update_metric(&mut self) {
-        self.metric = self.total_points as f32;
-        // self.metric = self.form * self.health;
+        // self.metric = self.total_points as f32 * self.health;
+        self.metric = self.form * self.health;
     }
     pub fn new(
         form: f32,
@@ -49,7 +49,7 @@ impl Player {
         position: Position,
         id: u16,
         team: Team,
-        points: u32,
+        points: i32,
     ) -> Player {
         let mut player = Player {
             form: form,
@@ -89,8 +89,8 @@ impl ToString for Player {
             self.team,
             self.id,
             self.health,
-            self.metric,
             self.total_points,
+            self.metric,
         )
     }
 }
@@ -117,12 +117,11 @@ mod tests {
         assert_eq!(player.price, 1.0);
         assert_eq!(player.name, "Lampard");
         assert_eq!(player.id, 1);
-        assert_eq!(player.metric(), 5.0);
-        assert_eq!(player.metric, 5.0);
+        assert_eq!(player.metric, player.metric());
 
         assert_eq!(
             player.to_string(),
-            "Lampard, form: 7.20, price: 1.00, position: MID, team: Chelsea, id: 1, health: 0.80, points: 5, metric: 5"
+            "Lampard, form: 7.20, price: 1.00, position: MID, team: Chelsea, id: 1, health: 0.80, points: 5, metric: 5.76"
         );
 
         let same_id_player = Player::new(
