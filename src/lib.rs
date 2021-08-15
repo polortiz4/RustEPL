@@ -109,7 +109,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let current_squad = if config.overwrite_pulled_team {
         custom_squad(&list)
     } else {
-        let gameweek = config.gameweek.unwrap_or(read_gameweek());
+        let gameweek = config.gameweek.unwrap_or_else(||read_gameweek());
         api::get_my_squad(config.user_id, gameweek, &list)?
     };
     let reduced_list = if let Some(_) = config.min_player_metric {
