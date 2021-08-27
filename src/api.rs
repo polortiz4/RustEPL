@@ -116,11 +116,11 @@ mod tests {
 
     #[test]
     fn test_log_in() {
-        let bad_call_result = log_in("polortiz4@hotmail.com", "");
+        let bad_call_result = log_in("polortiz4@hotmail.com", "password");
         assert_eq!(
             "Error logging in: credentials",
             bad_call_result.unwrap_err().to_string()
         );
-        log_in("polortiz4@hotmail.com", "").unwrap();
+        log_in("polortiz4@hotmail.com", "password").unwrap();
 }
 }
