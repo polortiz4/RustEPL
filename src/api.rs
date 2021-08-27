@@ -108,4 +108,14 @@ mod tests {
         let copy = squad.clone();
         print!("{}", squad.changed_squad(&copy));
     }
+
+    #[test]
+    fn test_log_in() {
+        let bad_call_result = log_in("polortiz4@hotmail.com", "");
+        assert_eq!(
+            "Error logging in: credentials",
+            bad_call_result.unwrap_err().to_string()
+        );
+        log_in("polortiz4@hotmail.com", "").unwrap();
+}
 }
