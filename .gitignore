@@ -3,3 +3,5 @@
 /bin
 /target
 Cargo.lock
+.vscode/settings.json
+.vscode/launch.json
