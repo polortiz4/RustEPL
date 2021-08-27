@@ -2,8 +2,11 @@ use crate::player::{Player, Position};
 use crate::squad::Squad;
 use crate::team::Team;
 use serde::Deserialize;
+use std::borrow::Cow;
+use std::collections::HashMap;
 
 const FANTASY_API_URL: &str = "https://fantasy.premierleague.com/api/bootstrap-static/";
+const LOG_IN_URL: &str = "https://users.premierleague.com/accounts/login/";
 
 #[derive(Deserialize)]
 pub struct PlayerResponse {
@@ -20,6 +23,7 @@ pub struct APIPlayer {
     team: u8,
     id: u16,
     total_points: i32,
+    ep_next: String,
 }
 
 impl APIPlayer {
@@ -42,6 +46,7 @@ impl APIPlayer {
             self.id,
             team,
             self.total_points,
+            self.ep_next.parse::<f32>().unwrap(),
         )
     }
 }
@@ -81,7 +86,7 @@ pub fn get_my_squad(
         user_id, current_gameweek
     ))?;
     let resp_json: APISquad = serde_json::from_str(&resp.text()?)?;
-    let mut current_squad = Squad::new(100.0);
+    let mut current_squad = Squad::new(f32::INFINITY);
     for player in full_player_list {
         for pick in &resp_json.picks {
             if pick.element == player.id {
