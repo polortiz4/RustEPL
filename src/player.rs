@@ -30,6 +30,7 @@ pub struct Player {
     pub form: f32,
     pub health: f32,
     pub total_points: i32,
+    pub expected_points: f32,
     metric: f32,
 }
 
@@ -39,7 +40,8 @@ impl Player {
     }
     pub fn update_metric(&mut self) {
         // self.metric = self.total_points as f32 * self.health;
-        self.metric = self.form * self.health;
+        // self.metric = self.form * self.health;
+        self.metric = self.expected_points;
     }
     pub fn new(
         form: f32,
@@ -50,6 +52,7 @@ impl Player {
         id: u16,
         team: Team,
         points: i32,
+        expected_points: f32,
     ) -> Player {
         let mut player = Player {
             form: form,
@@ -61,6 +64,7 @@ impl Player {
             team: team,
             metric: 0.0,
             total_points: points,
+            expected_points: expected_points,
         };
         player.update_metric();
         player
@@ -101,7 +105,7 @@ mod tests {
 
     #[test]
     fn test_player() {
-        let player = Player::new(
+        let mut player = Player::new(
             7.2,
             0.8,
             1.0,
@@ -110,7 +114,9 @@ mod tests {
             1,
             Team::new(6),
             5,
+            5.0,
         );
+        player.metric = player.form *  player.health;
 
         assert_eq!(player.form, 7.2);
         assert_eq!(player.health, 0.8);
@@ -133,6 +139,7 @@ mod tests {
             1,
             Team::new(6),
             0,
+            0.0,
         );
         assert_eq!(player, same_id_player);
     }
