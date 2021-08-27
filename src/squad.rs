@@ -98,10 +98,6 @@ impl Squad {
         self.players.iter().map(|p| p.price).sum()
     }
 
-    pub fn leftover_money(&self) -> f32 {
-        self.max_cost() - self.total_cost()
-    }
-
     pub fn sort_players(&mut self) {
         self.goalkeepers.sort_by(|a, b| {
             b.metric()
@@ -145,6 +141,24 @@ impl Squad {
             .clone()
     }
 
+    pub fn vice_captain(&self) -> Player {
+        let mut copied_players = self.players.clone();
+        copied_players.sort_by(|a, b| {
+            b.metric()
+                .partial_cmp(&a.metric())
+                .expect("Error sorting players")
+        });
+        let mut vice_captain = copied_players.get(1).expect("Can't get second best player").clone();
+        if self.captain() == vice_captain {
+            // Try the first one
+            vice_captain = copied_players.get(0).expect("Can't get best player").clone();
+            if self.captain() == vice_captain {
+                panic!("Error in vice_captain(). Top two players evaluated to captain.");
+            }
+        }
+        vice_captain
+    }
+
     fn players_from_team(&self, team: Team) -> usize {
         self.players.iter().filter(|&p| p.team == team).count()
     }
@@ -177,9 +191,11 @@ impl Squad {
             result.push_str(&format!(" {:?}", player));
         }
         result.push_str(&format!(
-            "\n  Captain:  {:?}, metric: {}",
+            "\n  Captain:  {:?}, metric: {}\n  Vice-Captain:  {:?}, metric: {}",
             self.captain(),
-            self.captain().metric()
+            self.captain().metric(),
+            self.vice_captain(),
+            self.vice_captain().metric()
         ));
         result.push_str("\n\n  Changes needed:\n");
         result.push_str(&format!("{}\n", self.changes_from(current_squad)));
@@ -379,6 +395,7 @@ mod tests {
             3,
             Team::new(6),
             1,
+            1.0,
         )
     }
 
@@ -392,6 +409,7 @@ mod tests {
             13,
             Team::new(12),
             2,
+            2.0,
         )
     }
     fn karius_player() -> Player {
@@ -404,6 +422,7 @@ mod tests {
             21,
             Team::new(12),
             3,
+            3.0,
         )
     }
 
@@ -417,6 +436,7 @@ mod tests {
             14,
             Team::new(13),
             4,
+            4.0,
         )
     }
     fn terry_player() -> Player {
@@ -429,6 +449,7 @@ mod tests {
             18,
             Team::new(6),
             5,
+            5.0,
         )
     }
     fn vidic_player() -> Player {
@@ -441,6 +462,7 @@ mod tests {
             19,
             Team::new(16),
             6,
+            6.0,
         )
     }
     fn johnson_player() -> Player {
@@ -453,6 +475,7 @@ mod tests {
             29,
             Team::new(17),
             7,
+            7.0,
         )
     }
     fn cahill_player() -> Player {
@@ -465,6 +488,7 @@ mod tests {
             20,
             Team::new(17),
             8,
+            8.0,
         )
     }
 
@@ -478,6 +502,7 @@ mod tests {
             10,
             Team::new(6),
             9,
+            9.0,
         )
     }
     fn gerrard_player() -> Player {
@@ -490,6 +515,7 @@ mod tests {
             11,
             Team::new(9),
             10,
+            10.0,
         )
     }
     fn scholes_player() -> Player {
@@ -502,6 +528,7 @@ mod tests {
             12,
             Team::new(10),
             11,
+            11.0,
         )
     }
     fn lampard_player() -> Player {
@@ -514,6 +541,7 @@ mod tests {
             1,
             Team::new(6),
             12,
+            12.0,
         )
     }
     fn fabregas_player() -> Player {
@@ -526,6 +554,7 @@ mod tests {
             31,
             Team::new(1),
             13,
+            13.0,
         )
     }
     fn bale_player() -> Player {
@@ -538,6 +567,7 @@ mod tests {
             22,
             Team::new(3),
             14,
+            14.0,
         )
     }
     fn drogba_player() -> Player {
@@ -550,6 +580,7 @@ mod tests {
             15,
             Team::new(6),
             15,
+            15.0,
         )
     }
     fn rooney_player() -> Player {
@@ -562,6 +593,7 @@ mod tests {
             16,
             Team::new(9),
             16,
+            16.0,
         )
     }
     fn suarez_player() -> Player {
@@ -574,6 +606,7 @@ mod tests {
             17,
             Team::new(10),
             17,
+            17.0,
         )
     }
     fn adebayor_player() -> Player {
@@ -586,6 +619,7 @@ mod tests {
             40,
             Team::new(9),
             17,
+            17.0,
         )
     }
     fn full_squad() -> Squad {
@@ -681,7 +715,7 @@ mod tests {
             "    Out: Gerrard, 10 <-----------> In: Ortiz, 1\n    Out: Drogba, 15 <-----------> In: Adebayor, 17\n",
         );
         assert_eq!(expected, alt_squad.changes_from(&full_squad));
-        let expected = String::from("\n\nChanged Squad:\n  Lineup:   Karius Cahill Johnson Vidic Bale Fabregas Lampard Scholes Suarez Adebayor Rooney\n  Bench:    Maldini Buffon Terry Ortiz\n  Captain:  Adebayor, metric: 17\n\n  Changes needed:\n    Out: Gerrard, 10 <-----------> In: Ortiz, 1\n    Out: Drogba, 15 <-----------> In: Adebayor, 17\n\n");
+        let expected = String::from("\n\nChanged Squad:\n  Lineup:   Karius Cahill Johnson Vidic Bale Fabregas Lampard Scholes Suarez Adebayor Rooney\n  Bench:    Maldini Buffon Terry Ortiz\n  Captain:  Adebayor, metric: 17\n  Vice-Captain:  Suarez, metric: 17\n\n  Changes needed:\n    Out: Gerrard, 10 <-----------> In: Ortiz, 1\n    Out: Drogba, 15 <-----------> In: Adebayor, 17\n\n");
         print!("{}", expected);
         assert_eq!(expected, alt_squad.changed_squad(&full_squad));
     }
@@ -723,6 +757,15 @@ mod tests {
     #[test]
     fn test_captain() {
         let mut squad = Squad::new(100.0);
+        squad.try_add_player(&drogba_player()).unwrap();
+        squad.try_add_player(&lampard_player()).unwrap();
+        let player = pablo_player();
+        squad.force_add_player(&player);
+        assert_eq!(squad.vice_captain(), lampard_player());
+    }
+    #[test]
+    fn test_vice_captain() {
+        let mut squad = Squad::new(100.0);
         let player = lampard_player();
         squad.force_add_player(&player);
         let player = pablo_player();
@@ -755,6 +798,7 @@ mod tests {
             1,
             Team::new(6),
             5,
+            5.0,
         );
         squad.remove_player(&player);
         assert_eq!(squad.players_from_team(Team::new(6)), 1);
@@ -796,6 +840,7 @@ mod tests {
             3,
             Team::new(7),
             5,
+            5.0,
         );
         squad.force_add_player(&player);
         squad.force_add_player(&player);
@@ -808,6 +853,7 @@ mod tests {
             5,
             Team::new(8),
             5,
+            5.0,
         );
         assert!(matches!(
             squad.try_add_player(&player),
@@ -835,6 +881,7 @@ mod tests {
             5,
             Team::new(6),
             5,
+            5.0,
         );
         let result = squad.try_add_player(&player);
         match result {
@@ -868,6 +915,7 @@ mod tests {
             2,
             Team::new(6),
             5,
+            5.0,
         );
         let player3 = Player::new(
             7.2,
@@ -878,6 +926,7 @@ mod tests {
             3,
             Team::new(7),
             5,
+            5.0,
         );
         assert_eq!(squad.players_from_team(Team::new(6)), 0);
         assert_eq!(squad.players_from_team(Team::new(7)), 0);
