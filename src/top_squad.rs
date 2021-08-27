@@ -58,8 +58,8 @@ impl Listener for TopSquad {
         if squad_adjusted_metric > self.top_adjusted_metric {
             self.set_top_squad(&squad);
             println!(
-                "Found a squad with better metric! Squad #: {}, New metric: {:.2}\n",
-                self.n_squads, self.top_adjusted_metric
+                "Found a squad with better metric! Squad #: {}, New metric: {:.2}{: <3$}\n",
+                self.n_squads, self.top_adjusted_metric, "", 60
             );
         } else if squad_adjusted_metric == self.top_adjusted_metric {
             let bench_points_required_for_change =
@@ -68,7 +68,7 @@ impl Listener for TopSquad {
                 > bench_points_required_for_change
             {
                 self.set_top_squad(&squad);
-                println!("Found a squad was as good but with better value/bench! Squad #: {}, New metric: {:.2}\n", self.n_squads, self.top_adjusted_metric);
+                println!("Found a squad was as good but with better value/bench! Squad #: {}, New metric: {:.2}{: <3$}\n", self.n_squads, self.top_adjusted_metric, "", 60);
             }
         }
         if self.n_squads % 1000 == 0 {
