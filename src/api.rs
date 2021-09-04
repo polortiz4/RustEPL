@@ -103,7 +103,10 @@ pub fn get_my_squad(
 }
 
 fn log_in_error(reason: &str) -> Result<(), Box<dyn std::error::Error>> {
-    Err(Box::new(Error::new(ErrorKind::Other, format!("Error logging in: {}", reason))))
+    Err(Box::new(Error::new(
+        ErrorKind::Other,
+        format!("Error logging in: {}", reason),
+    )))
 }
 pub fn log_in(email: &str, password: &str) -> Result<(), Box<dyn std::error::Error>> {
     let params = [
@@ -117,26 +120,20 @@ pub fn log_in(email: &str, password: &str) -> Result<(), Box<dyn std::error::Err
     let response = client.post(LOG_IN_URL).form(&params).send()?;
 
     if response.status().is_success() {
-        let headers = response.url();
-        let pairs: HashMap<_, _> = headers.query_pairs().into_owned().collect();
+        let pairs: HashMap<_, _> = response.url().query_pairs().into_owned().collect();
         match pairs.get("state") {
-            Some(state) => {
-                match state.as_str() {
-                    "success" => Ok(()),
-                    "fail" => {
-                        match pairs.get("reason") {
-                            Some(reason) => log_in_error(reason),
-                            None => Ok(())
-                        }
-                    },
-                    _ => log_in_error(&format!("type of state {} was not understood", state))
-                }
-            }
-            None => log_in_error("got a response, but no state")
+            Some(state) => match state.as_str() {
+                "success" => Ok(()),
+                "fail" => match pairs.get("reason") {
+                    Some(reason) => log_in_error(reason),
+                    None => log_in_error("unknown reason"),
+                },
+                _ => log_in_error(&format!("type of state {} was not understood", state)),
+            },
+            None => log_in_error("got a response, but no state"),
         }
-    }
-    else{
-        log_in_error("failed to get response from URL")
+    } else {
+        log_in_error("failed to get response from website")
     }
 }
 
