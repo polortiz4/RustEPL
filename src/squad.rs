@@ -197,8 +197,12 @@ impl Squad {
             self.vice_captain(),
             self.vice_captain().metric()
         ));
-        result.push_str("\n\n  Changes needed:\n");
-        result.push_str(&format!("{}\n", self.changes_from(current_squad)));
+        result.push_str("\n\n  Transfers needed:\n");
+        let mut changes_needed = self.changes_from(current_squad);
+        if changes_needed == String::from(""){
+            changes_needed = String::from("    None");
+        }
+        result.push_str(&format!("{}\n", changes_needed));
         result
     }
     pub fn number_of_changes(&self, other: &Squad) -> usize {

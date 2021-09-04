@@ -126,9 +126,9 @@ pub fn log_in(email: &str, password: &str) -> Result<(), Box<dyn std::error::Err
                 "success" => Ok(()),
                 "fail" => match pairs.get("reason") {
                     Some(reason) => log_in_error(reason),
-                    None => log_in_error("unknown reason"),
+                    None => log_in_error("failed state for unknown reason"),
                 },
-                _ => log_in_error(&format!("type of state {} was not understood", state)),
+                _ => log_in_error(&format!("type of state ({}) was not understood", state)),
             },
             None => log_in_error("got a response, but no state"),
         }
