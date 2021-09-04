@@ -4,6 +4,7 @@ use crate::team::Team;
 use serde::Deserialize;
 use std::borrow::Cow;
 use std::collections::HashMap;
+use std::io::{Error, ErrorKind};
 
 const FANTASY_API_URL: &str = "https://fantasy.premierleague.com/api/bootstrap-static/";
 const LOG_IN_URL: &str = "https://users.premierleague.com/accounts/login/";
@@ -101,13 +102,50 @@ pub fn get_my_squad(
     Ok(current_squad)
 }
 
+fn log_in_error(reason: &str) -> Result<(), Box<dyn std::error::Error>> {
+    Err(Box::new(Error::new(ErrorKind::Other, format!("Error logging in: {}", reason))))
+}
+pub fn log_in(email: &str, password: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let params = [
+        ("login", email),
+        ("password", password),
+        ("redirect_uri", "https://fantasy.premierleague.com/"),
+        ("app", "plfpl-web"),
+    ];
+
+    let client = reqwest::blocking::Client::new();
+    let response = client.post(LOG_IN_URL).form(&params).send()?;
+
+    if response.status().is_success() {
+        let headers = response.url();
+        let pairs: HashMap<_, _> = headers.query_pairs().into_owned().collect();
+        match pairs.get("state") {
+            Some(state) => {
+                match state.as_str() {
+                    "success" => Ok(()),
+                    "fail" => {
+                        match pairs.get("reason") {
+                            Some(reason) => log_in_error(reason),
+                            None => Ok(())
+                        }
+                    },
+                    _ => log_in_error(&format!("type of state {} was not understood", state))
+                }
+            }
+            None => log_in_error("got a response, but no state")
+        }
+    }
+    else{
+        log_in_error("failed to get response from URL")
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_get_my_squad(){
+    fn test_get_my_squad() {
         let list = get_full_sorted_player_list().unwrap();
         let squad = get_my_squad(2367749, 1, &list).unwrap();
         let copy = squad.clone();
@@ -116,11 +154,11 @@ mod tests {
 
     #[test]
     fn test_log_in() {
-        let bad_call_result = log_in("polortiz4@hotmail.com", "password");
+        let bad_call_result = log_in("polortiz4@hotmail.com", "pasfsword");
         assert_eq!(
             "Error logging in: credentials",
             bad_call_result.unwrap_err().to_string()
         );
         log_in("polortiz4@hotmail.com", "password").unwrap();
-}
+    }
 }
