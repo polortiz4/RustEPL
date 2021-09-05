@@ -40,6 +40,14 @@
             },
             "args": [],
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["--gameweek", "0", "--password", "-n", "20", "--overwrite-pulled-team"]
         }
     ]
 }
