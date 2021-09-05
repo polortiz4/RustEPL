@@ -719,7 +719,7 @@ mod tests {
             "    Out: Gerrard, 10 <-----------> In: Ortiz, 1\n    Out: Drogba, 15 <-----------> In: Adebayor, 17\n",
         );
         assert_eq!(expected, alt_squad.changes_from(&full_squad));
-        let expected = String::from("\n\nChanged Squad:\n  Lineup:   Karius Cahill Johnson Vidic Bale Fabregas Lampard Scholes Suarez Adebayor Rooney\n  Bench:    Maldini Buffon Terry Ortiz\n  Captain:  Adebayor, metric: 17\n  Vice-Captain:  Suarez, metric: 17\n\n  Changes needed:\n    Out: Gerrard, 10 <-----------> In: Ortiz, 1\n    Out: Drogba, 15 <-----------> In: Adebayor, 17\n\n");
+        let expected = String::from("\n\nChanged Squad:\n  Lineup:   Karius Cahill Johnson Vidic Bale Fabregas Lampard Scholes Suarez Adebayor Rooney\n  Bench:    Maldini Buffon Terry Ortiz\n  Captain:  Adebayor, metric: 17\n  Vice-Captain:  Suarez, metric: 17\n\n  Transfers needed:\n    Out: Gerrard, 10 <-----------> In: Ortiz, 1\n    Out: Drogba, 15 <-----------> In: Adebayor, 17\n\n");
         print!("{}", expected);
         assert_eq!(expected, alt_squad.changed_squad(&full_squad));
     }
